@@ -1,8 +1,6 @@
 from __future__ import print_function, unicode_literals
 
 import logging
-import os
-import sys
 import subprocess
 
 import docker
@@ -35,7 +33,12 @@ class Gantry(object):
         try:
             from_image = tags[from_tag]
         except KeyError:
-            raise GantryError('Image %s:%s not found (looking for from_tag)' % (repository, from_tag))
+            # If there is no matching image for from_tag, behave as if there
+            # were no running containers for that image (i.e. spawn a single
+            # container of the to_tag)
+            log.warn('Image %s:%s not found (looking for from_tag)' % (repository, from_tag))
+            from_image = None
+
         try:
             to_image = tags[to_tag]
         except KeyError:

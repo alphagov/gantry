@@ -1,6 +1,6 @@
 from nose.tools import *
 from mock import MagicMock
-from mock import call, patch
+from mock import patch
 
 from gantry.gantry import Gantry, GantryError
 
@@ -96,25 +96,34 @@ class TestGantry(object):
         assert_equal(3, popen_mock.call_count)
 
     @patch('gantry.gantry.docker.Client')
-    def test_deploy_raises_for_unknown_tags(self, docker_mock):
-        docker_mock.return_value = client = DockerMock()
+    def test_deploy_unknown_to_tag(self, docker_mock):
+        docker_mock.return_value = DockerMock()
         g = Gantry()
 
         assert_raises(GantryError, g.deploy, 'foo', '125', '123')
-        assert_raises(GantryError, g.deploy, 'foo', '124', '122')
+
+    @patch('gantry.gantry.docker.Client')
+    @patch('gantry.gantry.subprocess.Popen')
+    def test_deploy_unknown_from_tag(self, popen_mock, docker_mock):
+        popen_mock.return_value.wait.return_value = 0
+        docker_mock.return_value = DockerMock()
+        g = Gantry()
+
+        # Should not raise
+        g.deploy('foo', '124', '122')
 
     @patch('gantry.gantry.docker.Client')
     @patch('gantry.gantry.subprocess.Popen')
     def test_deploy_error(self, popen_mock, docker_mock):
         popen_mock.return_value.wait.return_value = 1
-        docker_mock.return_value = client = DockerMock()
+        docker_mock.return_value  = DockerMock()
         g = Gantry()
 
         assert_raises(GantryError, g.deploy, 'foo', '124', '123')
 
     @patch('gantry.gantry.docker.Client')
     def test_ports(self, docker_mock):
-        docker_mock.return_value = client = DockerMock()
+        docker_mock.return_value = DockerMock()
         g = Gantry()
 
         assert_equal([[12345, 8000], [12346, 8000], [12347, 8001]],
