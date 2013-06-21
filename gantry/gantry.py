@@ -18,8 +18,8 @@ class GantryError(Exception):
 
 class Gantry(object):
 
-    def __init__(self, base_url=DOCKER_DEFAULT_URL):
-        self.client = docker.Client(base_url)
+    def __init__(self, docker_url=DOCKER_DEFAULT_URL):
+        self.client = docker.Client(docker_url)
 
     def deploy(self, repository, to_tag, from_tag):
         """
