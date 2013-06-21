@@ -5,7 +5,9 @@ import logging
 
 from .gantry import Gantry, GantryError, DOCKER_DEFAULT_URL
 
-logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
+_log_level_default = logging.WARN
+_log_level = getattr(logging, env.get('GANTRY_LOGLEVEL', '').upper(), _log_level_default)
+logging.basicConfig(format='%(levelname)s: %(message)s', level=_log_level)
 
 
 @arg('-f', '--from-tag', required=True)
