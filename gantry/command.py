@@ -1,12 +1,14 @@
 from __future__ import print_function, unicode_literals
 
-from argh import arg, ArghParser
 import logging
+import os
+
+from argh import arg, ArghParser
 
 from .gantry import Gantry, GantryError, DOCKER_DEFAULT_URL
 
 _log_level_default = logging.WARN
-_log_level = getattr(logging, env.get('GANTRY_LOGLEVEL', '').upper(), _log_level_default)
+_log_level = getattr(logging, os.environ.get('GANTRY_LOGLEVEL', '').upper(), _log_level_default)
 logging.basicConfig(format='%(levelname)s: %(message)s', level=_log_level)
 
 
