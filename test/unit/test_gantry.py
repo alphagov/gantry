@@ -21,9 +21,11 @@ MOCK_IMAGES = [
 
 MOCK_CONTAINERS = [
     {'Image': 'foo:123',
-     'Id': '1da4dfe2db6dbf45755f8419e9de4e78f340b4f300783a57e42ead853b46158a'},
+     'Id': '1da4dfe2db6dbf45755f8419e9de4e78f340b4f300783a57e42ead853b46158a',
+     'Ports': '12345->8000'},
     {'Image': 'foo:123',
-     'Id': '5e68d8d416da617eeed45f7613f820731fe1d642ff343a43a4a49b55cbb2116e'},
+     'Id': '5e68d8d416da617eeed45f7613f820731fe1d642ff343a43a4a49b55cbb2116e',
+     'Ports': '12346->8000, 12347->8001'},
     {'Image': 'e79a8874751c',
      'Id': '60008cffafabaca08174af02d95de22bda6aad09a31a86aeb6b47a6c77f3bec3'},
     {'Image': 'e79', # short id shouldn't be used to match -- too risky
@@ -93,7 +95,6 @@ class TestGantry(object):
             '51f59b5c1b8354c2cc430cc3641fc87a0ad8443465f7b97d9f79ad6263f45548'])
         assert_equal(3, popen_mock.call_count)
 
-
     @patch('gantry.gantry.docker.Client')
     def test_deploy_raises_for_unknown_tags(self, docker_mock):
         docker_mock.return_value = client = DockerMock()
@@ -110,3 +111,11 @@ class TestGantry(object):
         g = Gantry()
 
         assert_raises(GantryError, g.deploy, 'foo', '124', '123')
+
+    @patch('gantry.gantry.docker.Client')
+    def test_ports(self, docker_mock):
+        docker_mock.return_value = client = DockerMock()
+        g = Gantry()
+
+        assert_equal([[12345, 8000], [12346, 8000], [12347, 8001]],
+                     g.ports('foo', tag='123'))

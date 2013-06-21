@@ -57,13 +57,26 @@ class Gantry(object):
 
         log.info("Shut down %d old containers", len(from_containers))
 
-    def containers(self, repository):
+    def containers(self, repository, tag=None):
         """
         Return a list of all currently-running containers for the specified
         repository.
         """
         images, tags, containers = self.fetch_state(repository)
-        return containers
+        if tag is None:
+            return containers
+        return filter(lambda ct: ct['Image'] == tags.get(tag), containers)
+
+    def ports(self, repository, tag=None):
+        """
+        Return a list of all forwarded ports for currently-running containers
+        for the specified repository.
+        """
+        ports = []
+        for c in self.containers(repository, tag=tag):
+            if 'Ports' in c:
+                ports.extend(_parse_ports(c['Ports']))
+        return ports
 
     def fetch_state(self, repository):
         images, tags = self._fetch_images(repository)
@@ -107,3 +120,7 @@ class Gantry(object):
         retcode = p.wait()
         if retcode != 0:
             raise GantryError("Failed to start container from image %s" % img_id)
+
+
+def _parse_ports(ports):
+    return [map(int, p.split('->', 1)) for p in ports.split(', ')]

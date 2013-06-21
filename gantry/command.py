@@ -23,15 +23,26 @@ def deploy(args):
 
 
 @arg('repository')
+@arg('-t', '--tag')
 def containers(args):
     gantry = Gantry(args.base_url)
-    for c in gantry.containers(args.repository):
+    for c in gantry.containers(args.repository, tag=args.tag):
         print(c['Id'])
 
 
+@arg('repository')
+@arg('-t', '--tag')
+@arg('-q', '--quiet', default=False)
+def ports(args):
+    gantry = Gantry(args.base_url)
+    if not args.quiet:
+        print("%10s %10s" % ("host_port", "guest_port"))
+    for p in gantry.ports(args.repository, tag=args.tag):
+        print("%10d %10d" % (p[0], p[1]))
+
 parser = ArghParser()
 parser.add_argument('-b', '--base-url', default=DOCKER_DEFAULT_URL)
-parser.add_commands([deploy, containers])
+parser.add_commands([deploy, containers, ports])
 
 
 def main():
