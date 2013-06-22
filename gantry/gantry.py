@@ -56,7 +56,10 @@ class Gantry(object):
                  to_tag)
 
         for i in xrange(num_containers):
-            self._start_container(to_image)
+            retcode = _start_container(to_image)
+            if retcode != 0:
+                raise GantryError("Failed to start container from image %s" %
+                                  to_image)
 
         log.info("Started %d containers", num_containers)
         log.info("Shutting down %d old containers with %s:%s",
@@ -124,15 +127,59 @@ class Gantry(object):
             tags[tag] = img['Id']
         return images, tags
 
-    def _start_container(self, img_id):
-        # FIXME: This should use the HTTP client, but the Python bindings are
-        # out of date and don't support run() without a command, which is what
-        # we need for our images build with the CMD Dockerfile directive.
-        p = subprocess.Popen(['docker', 'run', '-d', img_id])
-        retcode = p.wait()
-        if retcode != 0:
-            raise GantryError("Failed to start container from image %s" % img_id)
+
+def _start_container(img_id):
+    # FIXME: This should use the HTTP client, but the Python bindings are
+    # out of date and don't support run() without a command, which is what
+    # we need for our images build with the CMD Dockerfile directive.
+    args = ['docker', 'run', '-d']
+
+    resolvers = _get_guest_resolvers()
+    if not resolvers:
+        log.warn("Starting container with an empty set of resolvers. "
+                 "You probably want to have at least one non-loopback "
+                 "resolver defined in /etc/resolv.conf")
+
+    for r in resolvers:
+        args.extend(['-dns', r])
+
+    args.append(img_id)
+
+    p = subprocess.Popen(args)
+    return p.wait()
+
+
+def _get_guest_resolvers():
+    """
+    Return an ordered list of nameservers appropriate for guest use
+    """
+    return filter(lambda x: x not in ['::1', '127.0.0.1'],
+                  _get_host_resolvers())
+
+
+def _get_host_resolvers():
+    """
+    Return an ordered list of host nameservers
+    """
+    with open('/etc/resolv.conf') as fp:
+        return _parse_resolv_conf(fp.read())
+
+
+def _parse_resolv_conf(contents):
+    """
+    Return a list of nameservers declared in ``contents``, a string with
+    resolv.conf-like syntax.
+    """
+    resolvers = []
+    for line in contents.splitlines():
+        fields = line.split()
+        if fields[0] == 'nameserver' and len(fields) == 2:
+            resolvers.append(fields[1])
+    return resolvers
 
 
 def _parse_ports(ports):
+    """
+    Parse docker's ports output into a list of (host, guest) port pairs
+    """
     return [map(int, p.split('->', 1)) for p in ports.split(', ')]
