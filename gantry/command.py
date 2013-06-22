@@ -8,8 +8,9 @@ import warnings
 # Filter annoying warnings from argh about bash completion
 warnings.filterwarnings('ignore', '.*argcomplete.*')
 
-from argh import arg, ArghParser
+from argh import arg, expects_obj, ArghParser
 
+from . import __version__
 from .gantry import Gantry, GantryError, DOCKER_DEFAULT_URL
 
 _log_level_default = logging.INFO
@@ -22,6 +23,7 @@ logging.basicConfig(format='%(levelname)s: %(message)s', level=_log_level)
 @arg('-f', '--from-tag', required=True)
 @arg('-t', '--to-tag', required=True)
 @arg('repository')
+@expects_obj
 def deploy(args):
     gantry = Gantry(args.docker_url)
     try:
@@ -33,6 +35,7 @@ def deploy(args):
 
 @arg('repository')
 @arg('-t', '--tag')
+@expects_obj
 def containers(args):
     gantry = Gantry(args.docker_url)
     for c in gantry.containers(args.repository, tag=args.tag):
@@ -42,6 +45,7 @@ def containers(args):
 @arg('repository')
 @arg('-t', '--tag')
 @arg('-q', '--quiet', default=False)
+@expects_obj
 def ports(args):
     gantry = Gantry(args.docker_url)
     if not args.quiet:
@@ -49,7 +53,7 @@ def ports(args):
     for p in gantry.ports(args.repository, tag=args.tag):
         print("%10d %10d" % (p[0], p[1]))
 
-parser = ArghParser()
+parser = ArghParser(version=__version__)
 parser.add_argument('--docker-url', default=DOCKER_DEFAULT_URL)
 parser.add_commands([deploy, containers, ports])
 
