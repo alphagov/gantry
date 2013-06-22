@@ -71,23 +71,42 @@ class Gantry(object):
 
         log.info("Shut down %d old containers", len(from_containers))
 
-    def containers(self, repository, tag=None):
+    def containers(self, repository, tags=None, exclude_tags=None):
         """
         Return a list of all currently-running containers for the specified
         repository.
         """
-        images, tags, containers = self.fetch_state(repository)
-        if tag is None:
-            return containers
-        return filter(lambda ct: ct['Image'] == tags.get(tag), containers)
+        images, image_tags, containers = self.fetch_state(repository)
 
-    def ports(self, repository, tag=None):
+        if tags is None and exclude_tags is None:
+            return containers
+
+        def wanted(c):
+            matches_tags = True
+            matches_excludes = False
+
+            if tags is not None:
+                matches = map(lambda t: c['Image'] == image_tags.get(t), tags)
+                matches_tags = True in matches
+
+            if exclude_tags is not None:
+                matches = map(lambda t: c['Image'] == image_tags.get(t),
+                              exclude_tags)
+                matches_excludes = True in matches
+
+            return matches_tags and not matches_excludes
+
+        return filter(wanted, containers)
+
+    def ports(self, repository, tags=None, exclude_tags=None):
         """
         Return a list of all forwarded ports for currently-running containers
         for the specified repository.
         """
         ports = []
-        for c in self.containers(repository, tag=tag):
+        for c in self.containers(repository,
+                                 tags=tags,
+                                 exclude_tags=exclude_tags):
             if 'Ports' in c:
                 ports.extend(_parse_ports(c['Ports']))
         return ports
