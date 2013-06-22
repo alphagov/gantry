@@ -47,7 +47,8 @@ def copylist(obj):
 
 class DockerMock(MagicMock):
     def images(self, repo, *args, **kwargs):
-        return copylist(filter(lambda im: im['Repository'] == repo, MOCK_IMAGES))
+        return copylist(filter(lambda im: im['Repository'] == repo,
+                               MOCK_IMAGES))
 
     def containers(self, *args, **kwargs):
         return copylist(MOCK_CONTAINERS)
@@ -71,7 +72,9 @@ class TestGantry(object):
         _, _, containers = g.fetch_state('foo')
         assert_equal(3, len(containers))
         for c in containers:
-            assert_equal('e79a8874751c79664fdaf56e4af392d3c528fad1830b2588bf05eca876122e3f', c['Image'])
+            assert_equal('e79a8874751c79664fdaf56e4af392d3'
+                         'c528fad1830b2588bf05eca876122e3f',
+                         c['Image'])
 
     @patch('gantry.gantry.docker.Client')
     def test_containers(self, docker_mock):
@@ -79,9 +82,12 @@ class TestGantry(object):
         g = Gantry()
         res = g.containers('foo')
         res_ids = map(lambda x: x['Id'], res)
-        assert_equal(['1da4dfe2db6dbf45755f8419e9de4e78f340b4f300783a57e42ead853b46158a',
-                      '5e68d8d416da617eeed45f7613f820731fe1d642ff343a43a4a49b55cbb2116e',
-                      '60008cffafabaca08174af02d95de22bda6aad09a31a86aeb6b47a6c77f3bec3'],
+        assert_equal(['1da4dfe2db6dbf45755f8419e9de4e78'
+                      'f340b4f300783a57e42ead853b46158a',
+                      '5e68d8d416da617eeed45f7613f82073'
+                      '1fe1d642ff343a43a4a49b55cbb2116e',
+                      '60008cffafabaca08174af02d95de22b'
+                      'da6aad09a31a86aeb6b47a6c77f3bec3'],
                      res_ids)
 
     @patch('gantry.gantry._start_container')
@@ -167,4 +173,6 @@ nameserver 2000::100:a00:20ff:de8a:643a""",
 
 def test_parse_resolv_conf():
     for contents, expected in RESOLV_CONF_MOCK:
-        yield functools.partial(assert_equal, expected, _parse_resolv_conf(contents))
+        yield functools.partial(assert_equal,
+                                expected,
+                                _parse_resolv_conf(contents))
