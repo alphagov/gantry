@@ -36,25 +36,33 @@ class Gantry(object):
             # If there is no matching image for from_tag, behave as if there
             # were no running containers for that image (i.e. spawn a single
             # container of the to_tag)
-            log.warn('Image %s:%s not found (looking for from_tag)' % (repository, from_tag))
+            log.warn('Image %s:%s not found (looking for from_tag)' %
+                     (repository, from_tag))
             from_image = None
 
         try:
             to_image = tags[to_tag]
         except KeyError:
-            raise GantryError('Image %s:%s not found (looking for to_tag)' % (repository, to_tag))
+            raise GantryError('Image %s:%s not found (looking for to_tag)' %
+                              (repository, to_tag))
 
         from_containers = filter(lambda ct: ct['Image'] == from_image,
                                  containers)
         num_containers = max(1, len(from_containers))
 
-        log.info("Starting %d containers with %s:%s", num_containers, repository, to_tag)
+        log.info("Starting %d containers with %s:%s",
+                 num_containers,
+                 repository,
+                 to_tag)
 
         for i in xrange(num_containers):
             self._start_container(to_image)
 
         log.info("Started %d containers", num_containers)
-        log.info("Shutting down %d old containers with %s:%s", len(from_containers), repository, from_tag)
+        log.info("Shutting down %d old containers with %s:%s",
+                 len(from_containers),
+                 repository,
+                 from_tag)
 
         self.client.stop(*map(lambda ct: ct['Id'], from_containers))
 
@@ -91,7 +99,8 @@ class Gantry(object):
                 if repo != repository:
                     continue
                 if tag not in tags:
-                    raise GantryError("Found tag %s with no corresponding image entry" % tag)
+                    raise GantryError(
+                        "Found tag %s with no corresponding image entry" % tag)
                 c['Image'] = tags[tag]
                 containers.append(c)
             else:
