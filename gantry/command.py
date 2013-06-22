@@ -13,11 +13,14 @@ from argh import arg, expects_obj, ArghParser
 from . import __version__
 from .gantry import Gantry, GantryError, DOCKER_DEFAULT_URL
 
-_log_level_default = logging.INFO
-_log_level = getattr(logging,
-                     os.environ.get('GANTRY_LOGLEVEL', '').upper(),
-                     _log_level_default)
-logging.basicConfig(format='%(levelname)s: %(message)s', level=_log_level)
+_user_loglevel = os.environ.get('GANTRY_LOGLEVEL', '').upper()
+
+# If a loglevel wasn't explicitly specified, make requests a bit quieter
+if not _user_loglevel:
+    logging.getLogger("requests").setLevel(logging.WARNING)
+
+_loglevel = getattr(logging, _user_loglevel, logging.INFO)
+logging.basicConfig(format='%(levelname)s: %(message)s', level=_loglevel)
 
 
 @arg('-f', '--from-tag', required=True)
