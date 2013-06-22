@@ -3,6 +3,10 @@ from __future__ import print_function, unicode_literals
 import logging
 import os
 import sys
+import warnings
+
+# Filter annoying warnings from argh about bash completion
+warnings.filterwarnings('ignore', '.*argcomplete.*')
 
 from argh import arg, ArghParser
 
