@@ -65,18 +65,24 @@ class DockerMock(MagicMock):
 
 class TestGantry(object):
 
-    @patch('gantry.gantry.docker.Client')
-    def test_fetch_state_images_tags(self, docker_mock):
-        docker_mock.return_value = DockerMock()
+    def setup(self):
+        self.patcher = patch('gantry.gantry.docker.Client')
+        self.docker_mock = DockerMock()
+
+        docker_client_class = self.patcher.start()
+        docker_client_class.return_value = self.docker_mock
+
+    def teardown(self):
+        self.patcher.stop()
+
+    def test_fetch_state_images_tags(self):
         g = Gantry()
         images, tags, _ = g.fetch_state('foo')
         assert_equal(3, len(images))
         assert_equal(['123', '124', 'latest'], sorted(tags))
         assert_equal(tags['124'], tags['latest'])
 
-    @patch('gantry.gantry.docker.Client')
-    def test_fetch_state_normalises_container_images(self, docker_mock):
-        docker_mock.return_value = DockerMock()
+    def test_fetch_state_normalises_container_images(self):
         g = Gantry()
         _, _, containers = g.fetch_state('foo')
         assert_equal(3, len(containers))
@@ -85,9 +91,7 @@ class TestGantry(object):
                          'c528fad1830b2588bf05eca876122e3f',
                          c['Image'])
 
-    @patch('gantry.gantry.docker.Client')
-    def test_containers(self, docker_mock):
-        docker_mock.return_value = DockerMock()
+    def test_containers(self):
         g = Gantry()
         res = g.containers('foo')
         res_ids = map(lambda x: x['Id'], res)
@@ -100,14 +104,12 @@ class TestGantry(object):
                      res_ids)
 
     @patch('gantry.gantry._start_container')
-    @patch('gantry.gantry.docker.Client')
-    def test_deploy(self, docker_mock, start_mock):
+    def test_deploy(self, start_mock):
         start_mock.return_value = 0
-        docker_mock.return_value = client = DockerMock()
         g = Gantry()
         g.deploy('foo', '124', '123')
 
-        client.stop.assert_called_once_with(
+        self.docker_mock.stop.assert_called_once_with(
             '1da4dfe2db6dbf45755f8419e9de4e78f340b4f300783a57e42ead853b46158a',
             '5e68d8d416da617eeed45f7613f820731fe1d642ff343a43a4a49b55cbb2116e',
             '60008cffafabaca08174af02d95de22bda6aad09a31a86aeb6b47a6c77f3bec3')
@@ -116,35 +118,27 @@ class TestGantry(object):
             '51f59b5c1b8354c2cc430cc3641fc87a0ad8443465f7b97d9f79ad6263f45548')
         assert_equal(3, start_mock.call_count)
 
-    @patch('gantry.gantry.docker.Client')
-    def test_deploy_unknown_to_tag(self, docker_mock):
-        docker_mock.return_value = DockerMock()
+    def test_deploy_unknown_to_tag(self):
         g = Gantry()
 
         assert_raises(GantryError, g.deploy, 'foo', '125', '123')
 
     @patch('gantry.gantry._start_container')
-    @patch('gantry.gantry.docker.Client')
-    def test_deploy_unknown_from_tag(self, docker_mock, start_mock):
+    def test_deploy_unknown_from_tag(self, start_mock):
         start_mock.return_value = 0
-        docker_mock.return_value = DockerMock()
         g = Gantry()
 
         # Should not raise
         g.deploy('foo', '124', '122')
 
     @patch('gantry.gantry._start_container')
-    @patch('gantry.gantry.docker.Client')
-    def test_deploy_error(self, docker_mock, start_mock):
+    def test_deploy_error(self, start_mock):
         start_mock.return_value = 1
-        docker_mock.return_value = DockerMock()
         g = Gantry()
 
         assert_raises(GantryError, g.deploy, 'foo', '124', '123')
 
-    @patch('gantry.gantry.docker.Client')
-    def test_ports(self, docker_mock):
-        docker_mock.return_value = DockerMock()
+    def test_ports(self):
         g = Gantry()
 
         assert_equal([[12345, 8000], [12346, 8000], [12347, 8001]],
