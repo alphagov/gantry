@@ -182,4 +182,7 @@ def _parse_ports(ports):
     """
     Parse docker's ports output into a list of (host, guest) port pairs
     """
-    return [map(int, p.split('->', 1)) for p in ports.split(', ')]
+    if ports:
+        return [map(int, p.split('->', 1)) for p in ports.split(', ')]
+    else:
+        return []

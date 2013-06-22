@@ -23,6 +23,12 @@ MOCK_IMAGES = [
      'Id': 'e79a8874751c79664fdaf56e4af392d3c528fad1830b2588bf05eca876122e3f'},
     {'Repository': 'foo',  # untagged image shouldn't break stuff
      'Id': '3d0b615220644b2152cfd146f096d4b813ec87aa981bc43921efd071f7343916'},
+    {'Repository': 'bar',
+     'Tag': 'abc',
+     'Id': 'c6cfdda4a8a1d78ae3ab75eb6ede1ce86df17b5a81520f6a9eefc83a6f30c317'},
+    {'Repository': 'bar',
+     'Tag': 'cde',
+     'Id': '121d41a89a2dc27dcac57ba0846c695bdf6abdfd2416ac6bbebc63062f217708'},
 ]
 
 MOCK_CONTAINERS = [
@@ -37,6 +43,9 @@ MOCK_CONTAINERS = [
     {'Image': 'e79',  # short id shouldn't be used to match -- too risky
      'Id': '240eeaa7cb8b52d14328d3e4b6b2e4a5432fc52e12da7b0b1db2b6498d03a196'},
     {'Image': 'bar:abc',
+     'Id': 'fd677144ec1eeab4c396fa80be8bffb7a55bafb89a99c2ec9bab7c8ad902c8c2'},
+    {'Image': 'bar:cde',
+     'Ports': '',
      'Id': 'fd677144ec1eeab4c396fa80be8bffb7a55bafb89a99c2ec9bab7c8ad902c8c2'},
 ]
 
@@ -140,6 +149,8 @@ class TestGantry(object):
 
         assert_equal([[12345, 8000], [12346, 8000], [12347, 8001]],
                      g.ports('foo', tag='123'))
+        assert_equal([], g.ports('bar', tag='abc'))
+        assert_equal([], g.ports('bar', tag='cde'))
 
 
 @patch('gantry.gantry.subprocess.Popen')
