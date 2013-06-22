@@ -184,7 +184,7 @@ def _get_host_resolvers():
     """
     Return an ordered list of host nameservers
     """
-    with open('/etc/resolv.conf') as fp:
+    with open('/etc/resolv.conf') as fp:  # pragma: no cover
         return _parse_resolv_conf(fp.read())
 
 
