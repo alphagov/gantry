@@ -155,6 +155,14 @@ class TestGantry(object):
             '51f59b5c1b8354c2cc430cc3641fc87a0ad8443465f7b97d9f79ad6263f45548')
         assert_equal(3, start_mock.call_count)
 
+    @patch('gantry.gantry._start_container')
+    def test_deploy_stop(self, start_mock):
+        start_mock.return_value = 0
+        g = Gantry()
+        g.deploy('foo', '124', '123', stop=False)
+
+        self.docker_mock.stop.assert_not_called()
+
     def test_deploy_unknown_to_tag(self):
         g = Gantry()
 

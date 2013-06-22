@@ -19,7 +19,7 @@ class Gantry(object):
     def __init__(self, docker_url=DOCKER_DEFAULT_URL):
         self.client = docker.Client(docker_url)
 
-    def deploy(self, repository, to_tag, from_tag):
+    def deploy(self, repository, to_tag, from_tag, stop=True):
         """
         For the specified repository, spin up as many containers of
         <repository>:<to_tag> as there are currently running containers of
@@ -62,6 +62,10 @@ class Gantry(object):
                                   to_image)
 
         log.info("Started %d containers", num_containers)
+
+        if not stop:
+            return
+
         log.info("Shutting down %d old containers with %s:%s",
                  len(from_containers),
                  repository,

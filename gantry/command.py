@@ -25,12 +25,17 @@ logging.basicConfig(format='%(levelname)s: %(message)s', level=_loglevel)
 
 @arg('-f', '--from-tag', required=True)
 @arg('-t', '--to-tag', required=True)
+@arg('--no-stop', action='store_true',
+     help="Don't stop previously-deployed containers automatically")
 @arg('repository')
 @expects_obj
 def deploy(args):
     gantry = Gantry(args.docker_url)
     try:
-        gantry.deploy(args.repository, args.to_tag, args.from_tag)
+        gantry.deploy(args.repository,
+                      args.to_tag,
+                      args.from_tag,
+                      stop=not args.no_stop)
     except GantryError as e:
         print(str(e))
         sys.exit(1)
