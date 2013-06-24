@@ -217,7 +217,12 @@ nameserver 8.8.4.4""",
     ("""# nameserver comment
 nameserver 192.168.0.1
 nameserver 2000::100:a00:20ff:de8a:643a""",
-     ['192.168.0.1', '2000::100:a00:20ff:de8a:643a'])
+     ['192.168.0.1', '2000::100:a00:20ff:de8a:643a']),
+    ("""# file with blank lines
+
+search foo bar
+nameserver 8.8.4.4""",
+     ['8.8.4.4']),
 )
 
 

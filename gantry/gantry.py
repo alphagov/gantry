@@ -196,7 +196,7 @@ def _parse_resolv_conf(contents):
     resolvers = []
     for line in contents.splitlines():
         fields = line.split()
-        if fields[0] == 'nameserver' and len(fields) == 2:
+        if len(fields) == 2 and fields[0] == 'nameserver':
             resolvers.append(fields[1])
     return resolvers
 
