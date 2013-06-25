@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 from gantry import __version__
 
 requirements = ['argh==0.23.2',
-                'docker-py==0.0.4']
+                'docker-py==0.0.5']
 
 HERE = os.path.dirname(__file__)
 try:
